@@ -5,12 +5,15 @@ from django.urls import reverse
 
 
 class PublishedManager(models.Manager):
+    """Niestandardowy menadżer do pobierania opublikowanych postów."""
+
     def get_queryset(self):
         return (super(PublishedManager, self).get_queryset().
                 filter(status='published'))
 
 
 class Post(models.Model):
+    """Model do tworzenia postów."""
     STATUS_CHOICES = (
         ('draft', 'Draft'),
         ('published', 'Published'),
@@ -41,3 +44,23 @@ class Post(models.Model):
                              self.publish.strftime('%m'),
                              self.publish.strftime('%d'),
                              self.slug])
+
+
+class Comment(models.Model):
+    """Model do zapisywania komentarzy."""
+    post = models.ForeignKey(Post, on_delete=models.CASCADE,
+                             related_name='comments')
+    name = models.CharField(max_length=80)
+    email = models.EmailField()
+    body = models.TextField()
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
+    active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ('created',)
+
+    def __str__(self):
+        # return ('Komentarz dodany przez {} dla posta {}'.
+        #         format(self.name, self.post))
+        return f'Komentarz dodany przez {self.name} dla posta {self.post}'

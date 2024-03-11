@@ -1,8 +1,8 @@
 from django.shortcuts import render, get_object_or_404
-from .models import Post
+from .models import Post, Comment
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.views.generic import ListView
-from .forms import EmailPostForm
+from .forms import EmailPostForm, CommentForm
 from django.core.mail import send_mail
 from mysite import email_data as ed
 
@@ -39,7 +39,23 @@ def post_detail(request, year, month, day, post):
                              publish__year=year,
                              publish__month=month,
                              publish__day=day)
-    context = {'post': post}
+    # Lista aktywnych komentarzy dla danego posta.
+    comments = post.comments.filter(active=True)
+
+    if request.method == 'POST':
+        # Komentarz został opublikowany.
+        comment_form = CommentForm(data=request.POST)
+        if comment_form.is_valid():
+            # Utworzenie obiektu Comment ALE nie zapisujemy go w bazie danych.
+            new_comment = comment_form.save(commit=False)
+            # Przypisanie komentarza do bierzącego posta.
+            new_comment.post = post
+            # Zapisanie komentarza w bazie danych.
+            new_comment.save()
+    else:
+        comment_form = CommentForm()
+
+    context = {'post': post, 'comments': comments, 'comment_form': comment_form}
     return render(request, 'blog/post/detail.html', context)
 
 
@@ -55,11 +71,16 @@ def post_share(request, post_id):
             # Weryfikacja pól formularza zakończyła się powodzeniem...
             cd = form.cleaned_data
             post_url = request.build_absolute_uri(post.get_absolute_url())
-            subject = ('{} ({}) zachęca do przeczytania "{}"'.
-                       format(cd['name'], cd['email'], post.title))
-            message = ('Przeczytaj post "{}" na stronie {}\n\n'
-                       'Komentarz dodany przez {}: {}'.
-                       format(post.title, post_url, cd['name'], cd['comments']))
+            # subject = ('{} ({}) zachęca do przeczytania "{}"'.
+            #            format(cd['name'], cd['email'], post.title))
+            # message = ('Przeczytaj post "{}" na stronie {}\n\n'
+            #            'Komentarz dodany przez {}: {}'.
+            #            format(post.title, post_url, cd['name'], cd['comments']))
+            subject = (f'{cd["name"]} ({cd["email"]}) zachęca do przeczytania '
+                       f'"{post.title}"')
+            message = (
+                f'Przeczytaj post "{post.title}" na stronie {post_url}\n\n'
+                f'Komentarz dodany przez {cd["name"]}: {cd["comments"]}')
             send_mail(subject, message, ed.EMAIL_HOST_USER, [cd['to']])
             sent = True
             # ...więc można wysłać wiadomość
