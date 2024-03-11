@@ -5,6 +5,7 @@ from django.views.generic import ListView
 from .forms import EmailPostForm, CommentForm
 from django.core.mail import send_mail
 from mysite import email_data as ed
+from taggit.models import Tag
 
 
 class PostListView(ListView):
@@ -14,8 +15,14 @@ class PostListView(ListView):
     template_name = 'blog/post/list.html'
 
 
-def post_list(request):
+def post_list(request, tag_slug=None):
     object_list = Post.published.all()
+    tag = None
+
+    if tag_slug:
+        tag = get_object_or_404(Tag, slug=tag_slug)
+        object_list = object_list.filter(tags__in=[tag])
+
     paginator = Paginator(object_list, 3)  # Trzy posty na każdej stronie.
     page = request.GET.get('page')
     try:
@@ -28,7 +35,7 @@ def post_list(request):
         # Jeżelli zmienna page ma wartość większą niż numer ostatniej strony
         # wyników, wtedy pobierana jest ostatnia strona wyników.
         posts = paginator.page(paginator.num_pages)
-    context = {'posts': posts, 'page': page}
+    context = {'posts': posts, 'page': page, 'tag': tag}
     return render(request, 'blog/post/list.html', context)
 
 

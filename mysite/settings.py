@@ -33,6 +33,8 @@ ALLOWED_HOSTS = []
 INSTALLED_APPS = [
     # Moje aplikacje.
     'blog.apps.BlogConfig',
+    # Aplikacje innych firm.
+    'taggit',
     # Domyślne aplikacje.
     'django.contrib.admin',
     'django.contrib.auth',
