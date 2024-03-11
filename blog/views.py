@@ -2,6 +2,7 @@ from django.shortcuts import render, get_object_or_404
 from .models import Post
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.views.generic import ListView
+from .forms import EmailPostForm
 
 
 class PostListView(ListView):
@@ -38,3 +39,20 @@ def post_detail(request, year, month, day, post):
                              publish__day=day)
     context = {'post': post}
     return render(request, 'blog/post/detail.html', context)
+
+
+def post_share(request, post_id):
+    # Pobieranie posta na podstawie jego identyfikatora.
+    post = get_object_or_404(Post, id=post_id, status='published')
+
+    if request.method == 'POST':
+        # Formularz został wysłany.
+        form = EmailPostForm(request.POST)
+        if form.is_valid():
+            # Weryfikacja pól formularza zakończyła się powodzeniem...
+            cd = form.cleaned_data
+            # ...więc można wysłać wiadomość
+    else:
+        form = EmailPostForm()
+    context = {'post': post, 'form': form}
+    return render(request, 'blog/post/share.html', context)
