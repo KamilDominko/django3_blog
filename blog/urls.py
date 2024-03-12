@@ -16,4 +16,6 @@ urlpatterns = [
     path('<int:post_id>/share/', views.post_share, name='post_share'),
     # Kanał wiadomości dla postów.
     path('feed/', LatestPostsFeed(), name='post_feed'),
+    # Widok wyszukiwania.
+    path('search/', views.post_search, name='post_search'),
 ]
