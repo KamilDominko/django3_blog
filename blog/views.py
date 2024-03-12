@@ -8,6 +8,7 @@ from mysite import private_data as ed
 from taggit.models import Tag
 from django.db.models import Count
 from django.contrib.postgres.search import SearchVector, SearchQuery, SearchRank
+from django.contrib.postgres.search import TrigramSimilarity
 
 
 class PostListView(ListView):
@@ -119,11 +120,14 @@ def post_search(request):
             search_vector = (SearchVector('title', weight='A') +
                              SearchVector('body', weight='B'))
             search_query = SearchQuery(query)
+            # results = Post.objects.annotate(
+            #     search=search_vector,
+            #     rank=SearchRank(search_vector, search_query)).filter(
+            #     rank__gte=0.3,
+            #     search=search_query).order_by('-rank')
             results = Post.objects.annotate(
-                search=search_vector,
-                rank=SearchRank(search_vector, search_query)).filter(
-                rank__gte=0.3,
-                search=search_query).order_by('-rank')
+                similarity=TrigramSimilarity('title', query), ).filter(
+                similarity__gt=0.1).order_by('-similarity')
 
     context = {'form': form, 'query': query, 'results': results}
     return render(request, 'blog/post/search.html', context)
