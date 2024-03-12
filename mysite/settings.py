@@ -30,11 +30,15 @@ ALLOWED_HOSTS = []
 
 # Application definition
 
+SITE_ID = 1
+
 INSTALLED_APPS = [
     # Moje aplikacje.
     'blog.apps.BlogConfig',
     # Aplikacje innych firm.
     'taggit',
+    'django.contrib.sites',
+    'django.contrib.sitemaps',
     # Domyślne aplikacje.
     'django.contrib.admin',
     'django.contrib.auth',
