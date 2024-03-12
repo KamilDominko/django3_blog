@@ -7,7 +7,7 @@ from django.core.mail import send_mail
 from mysite import private_data as ed
 from taggit.models import Tag
 from django.db.models import Count
-from django.contrib.postgres.search import SearchVector
+from django.contrib.postgres.search import SearchVector, SearchQuery, SearchRank
 
 
 class PostListView(ListView):
@@ -115,7 +115,15 @@ def post_search(request):
         form = SearchForm(request.GET)
         if form.is_valid():
             query = form.cleaned_data['query']
+
+            search_vector = (SearchVector('title', weight='A') +
+                             SearchVector('body', weight='B'))
+            search_query = SearchQuery(query)
             results = Post.objects.annotate(
-                search=SearchVector('title', 'body')).filter(search=query)
+                search=search_vector,
+                rank=SearchRank(search_vector, search_query)).filter(
+                rank__gte=0.3,
+                search=search_query).order_by('-rank')
+
     context = {'form': form, 'query': query, 'results': results}
     return render(request, 'blog/post/search.html', context)
