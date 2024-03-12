@@ -12,7 +12,7 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 
 import os
 # import email_data as ed
-from . import email_data as ed
+from . import private_data as pd
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -37,8 +37,10 @@ INSTALLED_APPS = [
     'blog.apps.BlogConfig',
     # Aplikacje innych firm.
     'taggit',
+    # Aplikacje dodane z django.
     'django.contrib.sites',
     'django.contrib.sitemaps',
+    'django.contrib.postgres',
     # Domyślne aplikacje.
     'django.contrib.admin',
     'django.contrib.auth',
@@ -83,8 +85,10 @@ WSGI_APPLICATION = 'mysite.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'blog',
+        'USER': pd.POSTGRESQL_USER,
+        'PASSWORD': pd.POSTGRESQL_PASSWORD,
     }
 }
 
@@ -126,7 +130,7 @@ STATIC_URL = '/static/'
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_HOST_USER = ed.EMAIL_HOST_USER
-EMAIL_HOST_PASSWORD = ed.EMAIL_HOST_PASSWORD
+EMAIL_HOST_USER = pd.EMAIL_HOST_USER
+EMAIL_HOST_PASSWORD = pd.EMAIL_HOST_PASSWORD
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True

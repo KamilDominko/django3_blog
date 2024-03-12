@@ -4,7 +4,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.views.generic import ListView
 from .forms import EmailPostForm, CommentForm
 from django.core.mail import send_mail
-from mysite import email_data as ed
+from mysite import private_data as ed
 from taggit.models import Tag
 from django.db.models import Count
 
